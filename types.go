@@ -86,7 +86,7 @@ func (dt Dtype) numpyDtype() (string, error) {
 			npDesc = append(npDesc, dtypeNumpyStrNew)
 		}
 		npDescPrev := strings.Join(npDesc, ", ")
-		return fmt.Sprintf("('%s', [%s])", dt.Name(), npDescPrev), nil
+		return fmt.Sprintf("[('%s', [%s])]", dt.Name(), npDescPrev), nil
 	default:
 		return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
 	}
