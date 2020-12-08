@@ -174,7 +174,7 @@ func (t *Dense) WriteNpy(w io.Writer) (err error) {
 	} else {
 		shapeStr = fmt.Sprintf("%v", t.Shape())
 	}
-	header := fmt.Sprintf("{'descr': '%s', 'fortran_order': False, 'shape': %s}", npdt, shapeStr)
+	header := fmt.Sprintf("{'descr': %s, 'fortran_order': False, 'shape': %s, }", npdt, shapeStr)
 	padding := 16 - ((10 + len(header)) % 16)
 	if padding > 0 {
 		header = header + strings.Repeat(" ", padding)
