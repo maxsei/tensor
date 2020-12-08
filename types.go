@@ -69,25 +69,24 @@ func init() {
 // however, not all Dtypes are supported
 func (dt Dtype) numpyDtype() (string, error) {
 
-	const tupleFmt string = "('%s', '%s')"
-
 	npdt, ok := numpyDtypes[dt]
 	switch {
 	case ok:
-		return fmt.Sprintf(tupleFmt, dt.Name(), npdt), nil
+		return npdt, nil
 	case !ok && (dt.Kind() == reflect.Struct):
-		var partialNumpyDescr []string
+		var npDesc []string
 		for i := 0; i < dt.NumField(); i++ {
 			field := dt.Field(i)
 			dtype := Dtype{field.Type}
 			dtypeNumpyStr, err := dtype.numpyDtype()
 			if err != nil {
-				return dtypeNumpyStr, nil
+				return dtypeNumpyStr, err
 			}
-			dtypeNumpyStrNew := fmt.Sprintf(tupleFmt, field.Name, dtypeNumpyStr)
-			partialNumpyDescr = append(partialNumpyDescr, dtypeNumpyStrNew)
+			dtypeNumpyStrNew := fmt.Sprintf("('%s', '%s')", field.Name, dtypeNumpyStr)
+			npDesc = append(npDesc, dtypeNumpyStrNew)
 		}
-		return fmt.Sprintf("[%s]", strings.Join(partialNumpyDescr, ", ")), nil
+		npDescPrev := strings.Join(npDesc, ", ")
+		return fmt.Sprintf("[('%s', %s)]", dt.Name(), npDescPrev), nil
 	default:
 		return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
 	}
