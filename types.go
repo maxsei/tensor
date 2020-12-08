@@ -48,8 +48,23 @@ func init() {
 		Complex64:  "c8",
 		Complex128: "c16",
 	}
-	for k, v := range numpyDtypes {
-		numpyKinds[k.Kind()] = v
+
+	numpyKinds = map[reflect.Kind]string{
+		Bool.Kind():       "b1",
+		Int.Kind():        fmt.Sprintf("i%d", Int.Size()),
+		Int8.Kind():       "i1",
+		Int16.Kind():      "i2",
+		Int32.Kind():      "i4",
+		Int64.Kind():      "i8",
+		Uint.Kind():       fmt.Sprintf("u%d", Uint.Size()),
+		Uint8.Kind():      "u1",
+		Uint16.Kind():     "u2",
+		Uint32.Kind():     "u4",
+		Uint64.Kind():     "u8",
+		Float32.Kind():    "f4",
+		Float64.Kind():    "f8",
+		Complex64.Kind():  "c8",
+		Complex128.Kind(): "c16",
 	}
 
 	reverseNumpyDtypes = map[string]Dtype{
