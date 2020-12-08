@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	. "gorgonia.org/tensor"
+	. "github.com/maxsei/tensor"
 )
 
 func Vector(t *Dense) (interface{}, error) {

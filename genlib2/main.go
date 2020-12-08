@@ -42,8 +42,8 @@ func init() {
 			log.Fatal("You need to define a $GOPATH")
 		}
 	}
-	tensorPkgLoc = path.Join(gopath, "src/gorgonia.org/tensor")
-	nativePkgLoc = path.Join(gopath, "src/gorgonia.org/tensor/native")
+	tensorPkgLoc = path.Join(gopath, "src/github.com/maxsei/tensor")
+	nativePkgLoc = path.Join(gopath, "src/github.com/maxsei/tensor/native")
 	execLoc = path.Join(gopath, "src/github.com/maxsei/tensor/internal/execution")
 	storageLoc = path.Join(gopath, "src/github.com/maxsei/tensor/internal/storage")
 }

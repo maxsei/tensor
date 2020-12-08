@@ -5,8 +5,8 @@ package execution
 import (
 	"reflect"
 
-	"github.com/pkg/errors"
 	"github.com/maxsei/tensor/internal/storage"
+	"github.com/pkg/errors"
 )
 
 func (e E) ArgmaxIter(t reflect.Type, a *storage.Header, it Iterator, lastSize int) (indices []int, err error) {

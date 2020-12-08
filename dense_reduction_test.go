@@ -5,8 +5,8 @@ package tensor
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/maxsei/tensor/internal/execution"
+	"github.com/stretchr/testify/assert"
 )
 
 var denseReductionTests = []struct {

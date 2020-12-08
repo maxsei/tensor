@@ -1,4 +1,4 @@
-// package native is a utility package for gorgonia.org/tensor.
+// package native is a utility package for github.com/maxsei/tensor.
 //
 // Amongst other things, it provides iterators that use Go slice semantics, while keeping a reference to the underlying memory.
 // This means you can update the slices and the changes will be reflected back into the original tensor.

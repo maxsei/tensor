@@ -5,8 +5,8 @@ package native
 import (
 	"testing"
 
+	. "github.com/maxsei/tensor"
 	"github.com/stretchr/testify/assert"
-	. "gorgonia.org/tensor"
 )
 
 func TestSelectB(t *testing.T) {

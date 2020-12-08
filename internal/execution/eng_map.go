@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/pkg/errors"
 	"github.com/maxsei/tensor/internal/storage"
+	"github.com/pkg/errors"
 )
 
 func (e E) Map(t reflect.Type, fn interface{}, a *storage.Header, incr bool) (err error) {

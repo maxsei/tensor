@@ -3,8 +3,8 @@
 package tensor
 
 import (
-	"github.com/pkg/errors"
 	"github.com/maxsei/tensor/internal/storage"
+	"github.com/pkg/errors"
 )
 
 func (e StdEng) Neg(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {

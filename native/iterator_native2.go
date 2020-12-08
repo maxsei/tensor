@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"unsafe"
 
+	. "github.com/maxsei/tensor"
 	"github.com/pkg/errors"
-	. "gorgonia.org/tensor"
 )
 
 func checkNativeSelectable(t *Dense, axis int, dt Dtype) error {

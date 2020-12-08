@@ -5,8 +5,8 @@ package execution
 import (
 	"reflect"
 
-	"github.com/pkg/errors"
 	"github.com/maxsei/tensor/internal/storage"
+	"github.com/pkg/errors"
 )
 
 func (e E) Neg(t reflect.Type, a *storage.Header) (err error) {

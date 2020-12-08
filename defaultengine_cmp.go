@@ -3,8 +3,8 @@
 package tensor
 
 import (
-	"github.com/pkg/errors"
 	"github.com/maxsei/tensor/internal/storage"
+	"github.com/pkg/errors"
 )
 
 // Gt performs a > b elementwise. Both a and b must have the same shape.

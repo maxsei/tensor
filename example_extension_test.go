@@ -6,7 +6,7 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
-	"gorgonia.org/tensor"
+	"github.com/maxsei/tensor"
 )
 
 // In this example, we want to create and handle a tensor of *MyType

@@ -27,6 +27,7 @@ func (dt Dtype) Format(s fmt.State, c rune)                    { fmt.Fprintf(s, 
 func (dt Dtype) Eq(other hm.Type) bool                         { return other == dt }
 
 var numpyDtypes map[Dtype]string
+var numpyKinds map[reflect.Kind]string
 var reverseNumpyDtypes map[string]Dtype
 
 func init() {
@@ -46,6 +47,9 @@ func init() {
 		Float64:    "f8",
 		Complex64:  "c8",
 		Complex128: "c16",
+	}
+	for k, v := range numpyDtypes {
+		numpyKinds[k.Kind()] = v
 	}
 
 	reverseNumpyDtypes = map[string]Dtype{
@@ -68,29 +72,37 @@ func init() {
 // NumpyDtype returns the Numpy's Dtype equivalent. This is predominantly used in converting a Tensor to a Numpy ndarray,
 // however, not all Dtypes are supported
 func (dt Dtype) numpyDtype() (string, error) {
+	// XXX: for right now using little endian string
+	const npEndStr string = "<"
 
-	npdt, ok := numpyDtypes[dt]
-	switch {
-	case ok:
-		// For right now we ware using little endianness
-		return "<" + npdt, nil
-	case !ok && (dt.Kind() == reflect.Struct):
-		var npDesc []string
+	// Try checking numpy string by kind if possible
+	if npdt, ok := numpyKinds[dt.Kind()]; ok {
+		return npEndStr + npdt, nil
+	}
+	// Try checking numpy string by dtype if possible
+	if npdt, ok := numpyDtypes[dt]; ok {
+		return npEndStr + npdt, nil
+	}
+	// In the case of a new struct dtype
+	if dt.Kind() == reflect.Struct {
+		var npdts []string
+		// Recursively create numpy dtype string
 		for i := 0; i < dt.NumField(); i++ {
 			field := dt.Field(i)
-			dtype := Dtype{field.Type}
-			dtypeNumpyStr, err := dtype.numpyDtype()
+			// Try and get the numpy dtype string for field's dtype
+			npdt, err := Dtype{field.Type}.numpyDtype()
 			if err != nil {
-				return dtypeNumpyStr, err
+				return npdt, err
 			}
-			dtypeNumpyStrNew := fmt.Sprintf("('%s', '%s')", field.Name, dtypeNumpyStr)
-			npDesc = append(npDesc, dtypeNumpyStrNew)
+			// Format dtype string and append to other dtype strings
+			dtypeNumpyStrNew := fmt.Sprintf("('%s', '%s')", field.Name, npdt)
+			npdts = append(npdts, dtypeNumpyStrNew)
 		}
-		npDescPrev := strings.Join(npDesc, ", ")
+		npDescPrev := strings.Join(npdts, ", ")
+		// Format and return new dtype string
 		return fmt.Sprintf("[('%s', [%s])]", dt.Name(), npDescPrev), nil
-	default:
-		return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
 	}
+	return npEndStr + "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
 	// retVal, ok := numpyDtypes[dt]
 	// if !ok {
 	// 	return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
@@ -353,11 +365,6 @@ func Register(a Dtype) {
 		}
 	}
 	allTypes.set = append(allTypes.set, a)
-	// Register numpy dtype string if possible
-	if npdt, err := a.numpyDtype(); err == nil {
-		numpyDtypes[a] = npdt
-		reverseNumpyDtypes[npdt] = a
-	}
 }
 
 func dtypeID(a Dtype) int {
