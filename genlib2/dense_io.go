@@ -67,15 +67,14 @@ func (t *Dense) WriteNpy(w io.Writer) (err error) {
 		return
 	}
 
-	var header string
+	var shapeStr string
 	if t.Dims() == 1 {
 		// when t is a 1D vector, numpy expects "(N,)" instead of "(N)" which t.Shape() returns.
-		header = "{'descr': '<%v', 'fortran_order': False, 'shape': (%d,)}"
-		header = fmt.Sprintf(header, npdt, t.Shape()[0])
+		shapeStr = fmt.Sprintf("(%d,)", t.shape()[0])
 	} else {
-		header = "{'descr': '<%v', 'fortran_order': False, 'shape': %v}"
-		header = fmt.Sprintf(header, npdt, t.Shape())
+		shapeStr = fmt.Sprintf("%v", t.Shape())
 	}
+	header := fmt.Sprintf("{'descr': '%v', 'fortran_order': False, 'shape': %s}", npdt, shapeStr)
 	padding := 16 - ((10 + len(header)) % 16)
 	if padding > 0 {
 		header = header + strings.Repeat(" ", padding)

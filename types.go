@@ -72,7 +72,8 @@ func (dt Dtype) numpyDtype() (string, error) {
 	npdt, ok := numpyDtypes[dt]
 	switch {
 	case ok:
-		return npdt, nil
+		// For right now we ware using little endianness
+		return "<" + npdt, nil
 	case !ok && (dt.Kind() == reflect.Struct):
 		var npDesc []string
 		for i := 0; i < dt.NumField(); i++ {
