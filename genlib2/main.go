@@ -44,8 +44,8 @@ func init() {
 	}
 	tensorPkgLoc = path.Join(gopath, "src/gorgonia.org/tensor")
 	nativePkgLoc = path.Join(gopath, "src/gorgonia.org/tensor/native")
-	execLoc = path.Join(gopath, "src/gorgonia.org/tensor/internal/execution")
-	storageLoc = path.Join(gopath, "src/gorgonia.org/tensor/internal/storage")
+	execLoc = path.Join(gopath, "src/github.com/maxsei/tensor/internal/execution")
+	storageLoc = path.Join(gopath, "src/github.com/maxsei/tensor/internal/storage")
 }
 
 func main() {

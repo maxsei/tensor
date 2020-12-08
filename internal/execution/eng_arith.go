@@ -6,7 +6,7 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
-	"gorgonia.org/tensor/internal/storage"
+	"github.com/maxsei/tensor/internal/storage"
 )
 
 func (e E) Add(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {

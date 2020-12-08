@@ -1,4 +1,4 @@
-package storage // import "gorgonia.org/tensor/internal/storage"
+package storage // import "github.com/maxsei/tensor/internal/storage"
 
 import (
 	"reflect"

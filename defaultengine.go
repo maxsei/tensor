@@ -4,7 +4,7 @@ import (
 	"unsafe"
 
 	"github.com/pkg/errors"
-	"gorgonia.org/tensor/internal/execution"
+	"github.com/maxsei/tensor/internal/execution"
 )
 
 // StdEng is the default execution engine that comes with the tensors. To use other execution engines, use the WithEngine construction option.

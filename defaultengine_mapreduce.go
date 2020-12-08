@@ -6,8 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"gorgonia.org/tensor/internal/execution"
-	"gorgonia.org/tensor/internal/storage"
+	"github.com/maxsei/tensor/internal/execution"
+	"github.com/maxsei/tensor/internal/storage"
 )
 
 func (e StdEng) Map(fn interface{}, a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {

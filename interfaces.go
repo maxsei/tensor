@@ -3,7 +3,7 @@ package tensor
 import (
 	"reflect"
 
-	"gorgonia.org/tensor/internal/storage"
+	"github.com/maxsei/tensor/internal/storage"
 )
 
 // Dtyper is any type that has a Dtype

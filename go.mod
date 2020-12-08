@@ -1,4 +1,4 @@
-module gorgonia.org/tensor
+module github.com/maxsei/tensor
 
 go 1.13
 

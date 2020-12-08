@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"sync"
 
-	"gorgonia.org/tensor/internal/storage"
+	"github.com/maxsei/tensor/internal/storage"
 )
 
 var habbo sync.Mutex

@@ -4,8 +4,8 @@ import (
 	"unsafe"
 
 	"github.com/pkg/errors"
-	"gorgonia.org/tensor/internal/execution"
-	"gorgonia.org/tensor/internal/storage"
+	"github.com/maxsei/tensor/internal/execution"
+	"github.com/maxsei/tensor/internal/storage"
 
 	"gorgonia.org/vecf64"
 )

@@ -1,11 +1,11 @@
-package execution // import "gorgonia.org/tensor/internal/execution"
+package execution // import "github.com/maxsei/tensor/internal/execution"
 
 import (
 	"fmt"
 	"reflect"
 	"unsafe"
 
-	"gorgonia.org/tensor/internal/storage"
+	"github.com/maxsei/tensor/internal/storage"
 )
 
 // E is the standard engine. It's to be embedded in package tensor

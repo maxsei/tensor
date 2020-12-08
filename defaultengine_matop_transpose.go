@@ -4,7 +4,7 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
-	"gorgonia.org/tensor/internal/storage"
+	"github.com/maxsei/tensor/internal/storage"
 )
 
 func (e StdEng) Transpose(a Tensor, expStrides []int) error {
