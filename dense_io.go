@@ -170,7 +170,7 @@ func (t *Dense) WriteNpy(w io.Writer) (err error) {
 	var shapeStr string
 	if t.Dims() == 1 {
 		// when t is a 1D vector, numpy expects "(N,)" instead of "(N)" which t.Shape() returns.
-		shapeStr = fmt.Sprintf("(%d,)", t.shape()[0])
+		shapeStr = fmt.Sprintf("(%d,)", t.Shape()[0])
 	} else {
 		shapeStr = fmt.Sprintf("%v", t.Shape())
 	}
