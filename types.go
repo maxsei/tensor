@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"strings"
 	"unsafe"
 
 	"github.com/chewxy/hm"
@@ -67,11 +68,34 @@ func init() {
 // NumpyDtype returns the Numpy's Dtype equivalent. This is predominantly used in converting a Tensor to a Numpy ndarray,
 // however, not all Dtypes are supported
 func (dt Dtype) numpyDtype() (string, error) {
-	retVal, ok := numpyDtypes[dt]
-	if !ok {
+
+	const tupleFmt string = "('%s', '%s')"
+
+	npdt, ok := numpyDtypes[dt]
+	switch {
+	case ok:
+		return fmt.Sprintf(tupleFmt, dt.Name(), npdt), nil
+	case !ok && (dt.Kind() == reflect.Struct):
+		var partialNumpyDescr []string
+		for i := 0; i < dt.NumField(); i++ {
+			field := dt.Field(i)
+			dtype := Dtype{field.Type}
+			dtypeNumpyStr, err := dtype.numpyDtype()
+			if err != nil {
+				return dtypeNumpyStr, nil
+			}
+			dtypeNumpyStrNew := fmt.Sprintf(tupleFmt, field.Name, dtypeNumpyStr)
+			partialNumpyDescr = append(partialNumpyDescr, dtypeNumpyStrNew)
+		}
+		return fmt.Sprintf("[%s]", strings.Join(partialNumpyDescr, ", ")), nil
+	default:
 		return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
 	}
-	return retVal, nil
+	// retVal, ok := numpyDtypes[dt]
+	// if !ok {
+	// 	return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
+	// }
+	// return retVal, nil
 }
 
 func fromNumpyDtype(t string) (Dtype, error) {
@@ -329,6 +353,11 @@ func Register(a Dtype) {
 		}
 	}
 	allTypes.set = append(allTypes.set, a)
+	// Register numpy dtype string if possible
+	if npdt, err := a.numpyDtype(); err == nil {
+		numpyDtypes[a] = npdt
+		reverseNumpyDtypes[npdt] = a
+	}
 }
 
 func dtypeID(a Dtype) int {
