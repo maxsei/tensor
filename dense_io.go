@@ -106,6 +106,7 @@ func (t *Dense) GobDecode(p []byte) (err error) {
 var npyDescRE = regexp.MustCompile(`'descr':\s*'([^']*)'`)
 var rowOrderRE = regexp.MustCompile(`'fortran_order':\s*(False|True)`)
 var shapeRE = regexp.MustCompile(`'shape':\s*\(([^\(]*)\)`)
+var npyHeaderValuesRE = regexp.MustCompile(`,*([{\s]*('\w+':\s)|(\s}))`)
 
 type binaryWriter struct {
 	io.Writer
@@ -209,6 +210,34 @@ func (t *Dense) WriteNpy(w io.Writer) (err error) {
 	return bw.Err()
 }
 
+// newNpyHeader takes the numpy header as a string of bytes and parses out the
+// values of the descr, fortran_order, and shape respectively using regex
+func newNpyHeader(header string) (*npyHeader, error) {
+	// Strip newlines
+	header = strings.Replace(header, "\n", "", -1)
+
+	// Find matches indecies from regex
+	matchIdxx := npyHeaderValuesRE.FindAllIndex([]byte(header), -1)
+	// Check if any matches and if found exactly 4 matches
+	if matchIdxx == nil {
+		return nil, fmt.Errorf("no matches found")
+	}
+	if len(matchIdxx) != 4 {
+		return nil, fmt.Errorf("expected 4 matches got %d", len(matchIdxx))
+	}
+
+	result := npyHeader{
+		descr:        header[matchIdxx[0][1]:matchIdxx[1][0]],
+		fortranOrder: header[matchIdxx[1][1]:matchIdxx[2][0]],
+		shape:        header[matchIdxx[2][1]:matchIdxx[3][0]],
+	}
+	return &result, nil
+}
+
+type npyHeader struct {
+	descr, fortranOrder, shape string
+}
+
 // ReadNpy reads NumPy formatted files into a *Dense
 func (t *Dense) ReadNpy(r io.Reader) (err error) {
 	br := binaryReader{Reader: r}
@@ -235,27 +264,21 @@ func (t *Dense) ReadNpy(r io.Reader) (err error) {
 	}
 
 	// extract stuff from header
-	var match [][]byte
-	if match = npyDescRE.FindSubmatch(header); match == nil {
-		return errors.New("No dtype information in npy file")
+	headerVals, err := newNpyHeader(string(header))
+	if err != nil {
+		return err
 	}
 
 	// TODO: check for endianness. For now we assume everything is little endian
-	if t.t, err = fromNumpyDtype(string(match[1][1:])); err != nil {
+	if t.t, err = fromNumpyDtype(headerVals.descr); err != nil {
 		return
 	}
 
-	if match = rowOrderRE.FindSubmatch(header); match == nil {
-		return errors.New("No Row Order information found in the numpy file")
-	}
-	if string(match[1]) != "False" {
+	if headerVals.fortranOrder != "False" {
 		return errors.New("Cannot yet read from Fortran Ordered Numpy files")
 	}
 
-	if match = shapeRE.FindSubmatch(header); match == nil {
-		return errors.New("No shape information found in npy file")
-	}
-	sizesStr := strings.Split(string(match[1]), ",")
+	sizesStr := strings.Split(headerVals.shape, ",")
 
 	var shape Shape
 	for _, s := range sizesStr {
@@ -275,6 +298,7 @@ func (t *Dense) ReadNpy(r io.Reader) (err error) {
 		t.e = StdEng{}
 	}
 	t.makeArray(size)
+	return
 
 	switch t.t.Kind() {
 	case reflect.Int:

@@ -30,6 +30,9 @@ var numpyDtypes map[Dtype]string
 var numpyKinds map[reflect.Kind]string
 var reverseNumpyDtypes map[string]Dtype
 
+// XXX: for right now using little endian string
+const npEndStr string = "<"
+
 func init() {
 	numpyDtypes = map[Dtype]string{
 		Bool:       "b1",
@@ -87,8 +90,6 @@ func init() {
 // NumpyDtype returns the Numpy's Dtype equivalent. This is predominantly used in converting a Tensor to a Numpy ndarray,
 // however, not all Dtypes are supported
 func (dt Dtype) numpyDtype() (string, error) {
-	// XXX: for right now using little endian string
-	const npEndStr string = "<"
 
 	// Try checking numpy string by kind if possible
 	if npdt, ok := numpyKinds[dt.Kind()]; ok {
@@ -380,6 +381,19 @@ func Register(a Dtype) {
 		}
 	}
 	allTypes.set = append(allTypes.set, a)
+	// Add dtype to numpy dtypes, and rev dtypes mappings if possible
+	if _, ok := numpyDtypes[a]; !ok {
+		npdt, err := a.numpyDtype()
+		if err != nil {
+			return
+		}
+		// Remove endian string from 'npdt' if exists
+		if npdt[:len(npEndStr)] == npEndStr {
+			npdt = npdt[len(npEndStr):]
+		}
+		numpyDtypes[a] = npdt
+		reverseNumpyDtypes[npdt] = a
+	}
 }
 
 func dtypeID(a Dtype) int {
