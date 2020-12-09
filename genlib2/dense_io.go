@@ -66,6 +66,9 @@ func (t *Dense) WriteNpy(w io.Writer) (err error) {
 	if npdt, err = t.t.numpyDtype(); err != nil{
 		return
 	}
+	if t.t.Kind() != reflect.Struct {
+		npdt = "<" + npdt
+	}
 
 	var shapeStr string
 	if t.Dims() == 1 {
@@ -318,6 +321,9 @@ func (t *Dense) ReadNpy(r io.Reader) (err error){
 	}
 	
 	// TODO: check for endianness. For now we assume everything is little endian
+	if headerVals.descr[:1] == "<" {
+		headerVals.descr = headerVals.descr[1:]
+	}
 	if t.t, err = fromNumpyDtype(headerVals.descr); err != nil {
 		return
 	}

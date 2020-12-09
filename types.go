@@ -93,14 +93,11 @@ func (dt Dtype) numpyDtype() (string, error) {
 
 	// Try checking numpy string by kind if possible
 	if npdt, ok := numpyKinds[dt.Kind()]; ok {
-		return npEndStr + npdt, nil
+		return npdt, nil
 	}
 	// Try checking numpy string by dtype if possible
 	if npdt, ok := numpyDtypes[dt]; ok {
-		if dt.Kind() == reflect.Struct {
-			return npdt, nil
-		}
-		return npEndStr + npdt, nil
+		return npdt, nil
 	}
 	// In the case of a new struct dtype
 	if dt.Kind() == reflect.Struct {
@@ -121,7 +118,7 @@ func (dt Dtype) numpyDtype() (string, error) {
 		// Format and return new dtype string
 		return fmt.Sprintf("[('%s', [%s])]", dt.Name(), npDescPrev), nil
 	}
-	return npEndStr + "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
+	return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
 	// retVal, ok := numpyDtypes[dt]
 	// if !ok {
 	// 	return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
@@ -384,19 +381,10 @@ func Register(a Dtype) {
 		}
 	}
 	allTypes.set = append(allTypes.set, a)
-	// Add dtype to numpy dtypes, and rev dtypes mappings if possible
-	if _, ok := numpyDtypes[a]; !ok {
-		npdt, err := a.numpyDtype()
-		if err != nil {
-			return
-		}
-		// Remove endian string from 'npdt' if exists
-		if npdt[:len(npEndStr)] == npEndStr {
-			npdt = npdt[len(npEndStr):]
-		}
-		numpyDtypes[a] = npdt
-		reverseNumpyDtypes[npdt] = a
-	}
+	// Add dtype to numpy dtypes and rev dtypes mappings
+	npdt, _ := a.numpyDtype()
+	numpyDtypes[a] = npdt
+	reverseNumpyDtypes[npdt] = a
 }
 
 func dtypeID(a Dtype) int {
