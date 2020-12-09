@@ -97,6 +97,9 @@ func (dt Dtype) numpyDtype() (string, error) {
 	}
 	// Try checking numpy string by dtype if possible
 	if npdt, ok := numpyDtypes[dt]; ok {
+		if dt.Kind() == reflect.Struct {
+			return npdt, nil
+		}
 		return npEndStr + npdt, nil
 	}
 	// In the case of a new struct dtype
