@@ -112,6 +112,10 @@ func (dt Dtype) numpyDtype() (string, error) {
 			}
 			// Format dtype string and append to other dtype strings
 			dtypeNumpyStrNew := fmt.Sprintf("('%s', '%s')", field.Name, npdt)
+			// If the field is of type struct npdt doesn't need single quotes
+			if field.Type.Kind() == reflect.Struct {
+				dtypeNumpyStrNew = fmt.Sprintf("('%s', %s)", field.Name, npdt)
+			}
 			npdts = append(npdts, dtypeNumpyStrNew)
 		}
 		npDescPrev := strings.Join(npdts, ", ")
