@@ -27,7 +27,11 @@ func (dt Dtype) Format(s fmt.State, c rune)                    { fmt.Fprintf(s, 
 func (dt Dtype) Eq(other hm.Type) bool                         { return other == dt }
 
 var numpyDtypes map[Dtype]string
+var numpyKinds map[reflect.Kind]string
 var reverseNumpyDtypes map[string]Dtype
+
+// XXX: for right now using little endian string
+const npEndStr string = "<"
 
 func init() {
 	numpyDtypes = map[Dtype]string{
@@ -46,6 +50,24 @@ func init() {
 		Float64:    "f8",
 		Complex64:  "c8",
 		Complex128: "c16",
+	}
+
+	numpyKinds = map[reflect.Kind]string{
+		Bool.Kind():       "b1",
+		Int.Kind():        fmt.Sprintf("i%d", Int.Size()),
+		Int8.Kind():       "i1",
+		Int16.Kind():      "i2",
+		Int32.Kind():      "i4",
+		Int64.Kind():      "i8",
+		Uint.Kind():       fmt.Sprintf("u%d", Uint.Size()),
+		Uint8.Kind():      "u1",
+		Uint16.Kind():     "u2",
+		Uint32.Kind():     "u4",
+		Uint64.Kind():     "u8",
+		Float32.Kind():    "f4",
+		Float64.Kind():    "f8",
+		Complex64.Kind():  "c8",
+		Complex128.Kind(): "c16",
 	}
 
 	reverseNumpyDtypes = map[string]Dtype{
@@ -69,28 +91,38 @@ func init() {
 // however, not all Dtypes are supported
 func (dt Dtype) numpyDtype() (string, error) {
 
-	const tupleFmt string = "('%s', '%s')"
-
-	npdt, ok := numpyDtypes[dt]
-	switch {
-	case ok:
-		return fmt.Sprintf(tupleFmt, dt.Name(), npdt), nil
-	case !ok && (dt.Kind() == reflect.Struct):
-		var partialNumpyDescr []string
+	// Try checking numpy string by kind if possible
+	if npdt, ok := numpyKinds[dt.Kind()]; ok {
+		return npdt, nil
+	}
+	// Try checking numpy string by dtype if possible
+	if npdt, ok := numpyDtypes[dt]; ok {
+		return npdt, nil
+	}
+	// In the case of a new struct dtype
+	if dt.Kind() == reflect.Struct {
+		var npdts []string
+		// Recursively create numpy dtype string
 		for i := 0; i < dt.NumField(); i++ {
 			field := dt.Field(i)
-			dtype := Dtype{field.Type}
-			dtypeNumpyStr, err := dtype.numpyDtype()
+			// Try and get the numpy dtype string for field's dtype
+			npdt, err := Dtype{field.Type}.numpyDtype()
 			if err != nil {
-				return dtypeNumpyStr, nil
+				return npdt, err
 			}
-			dtypeNumpyStrNew := fmt.Sprintf(tupleFmt, field.Name, dtypeNumpyStr)
-			partialNumpyDescr = append(partialNumpyDescr, dtypeNumpyStrNew)
+			// Format dtype string and append to other dtype strings
+			dtypeNumpyStrNew := fmt.Sprintf("('%s', '%s')", field.Name, npdt)
+			// If the field is of type struct npdt doesn't need single quotes
+			if field.Type.Kind() == reflect.Struct {
+				dtypeNumpyStrNew = fmt.Sprintf("('%s', %s)", field.Name, npdt)
+			}
+			npdts = append(npdts, dtypeNumpyStrNew)
 		}
-		return fmt.Sprintf("[%s]", strings.Join(partialNumpyDescr, ", ")), nil
-	default:
-		return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
+		npDescPrev := strings.Join(npdts, ", ")
+		// Format and return new dtype string
+		return fmt.Sprintf("[('%s', [%s])]", dt.Name(), npDescPrev), nil
 	}
+	return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
 	// retVal, ok := numpyDtypes[dt]
 	// if !ok {
 	// 	return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
@@ -353,11 +385,10 @@ func Register(a Dtype) {
 		}
 	}
 	allTypes.set = append(allTypes.set, a)
-	// Register numpy dtype string if possible
-	if npdt, err := a.numpyDtype(); err == nil {
-		numpyDtypes[a] = npdt
-		reverseNumpyDtypes[npdt] = a
-	}
+	// Add dtype to numpy dtypes and rev dtypes mappings
+	npdt, _ := a.numpyDtype()
+	numpyDtypes[a] = npdt
+	reverseNumpyDtypes[npdt] = a
 }
 
 func dtypeID(a Dtype) int {
