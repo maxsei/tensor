@@ -90,7 +90,6 @@ func init() {
 // NumpyDtype returns the Numpy's Dtype equivalent. This is predominantly used in converting a Tensor to a Numpy ndarray,
 // however, not all Dtypes are supported
 func (dt Dtype) numpyDtype() (string, error) {
-
 	// Try checking numpy string by kind if possible
 	if npdt, ok := numpyKinds[dt.Kind()]; ok {
 		return npdt, nil
@@ -99,8 +98,17 @@ func (dt Dtype) numpyDtype() (string, error) {
 	if npdt, ok := numpyDtypes[dt]; ok {
 		return npdt, nil
 	}
-	// In the case of a new struct dtype
-	if dt.Kind() == reflect.Struct {
+	// Try checking to see dt is an array or struct type if not return "v" and error
+	switch dt.Kind() {
+	case reflect.Array:
+		arrZero := reflect.Zero(dt.Type)
+		if arrZero.Len() > 0 {
+			arrFirstElem := arrZero.Index(0)
+			if arrFirstElem.Type().Kind() == reflect.Int32 {
+				return fmt.Sprintf("U%d", arrZero.Len()), nil
+			}
+		}
+	case reflect.Struct:
 		var npdts []string
 		// Recursively create numpy dtype string
 		for i := 0; i < dt.NumField(); i++ {
@@ -123,11 +131,6 @@ func (dt Dtype) numpyDtype() (string, error) {
 		return fmt.Sprintf("[('%s', [%s])]", dt.Name(), npDescPrev), nil
 	}
 	return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
-	// retVal, ok := numpyDtypes[dt]
-	// if !ok {
-	// 	return "v", errors.Errorf("Unsupported Dtype conversion to Numpy Dtype: %v", dt)
-	// }
-	// return retVal, nil
 }
 
 func fromNumpyDtype(t string) (Dtype, error) {
